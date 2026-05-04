@@ -3,6 +3,7 @@
 source ./messages.sh
 
 if [ $# -ne 1 ]; then
+    echo "Error: Please provide an ELF file as argument."
     echo "Usage: $0 <elf_file>"
     exit 1
 fi
@@ -14,14 +15,13 @@ if [ ! -f "$file_name" ]; then
     exit 1
 fi
 
-# Check ELF magic using od (portable, no xxd needed)
-magic_bytes=$(od -A n -t x1 -N 4 "$file_name" 2>/dev/null | tr -d ' \n')
-if [[ "$magic_bytes" != "7f454c46" ]]; then
+# Validate ELF using readelf (allowed tool)
+if ! readelf -h "$file_name" > /dev/null 2>&1; then
     echo "Error: '$file_name' is not a valid ELF file."
     exit 1
 fi
 
-elf_info=$(readelf -h "$file_name" 2>/dev/null)
+elf_info=$(readelf -h "$file_name")
 
 magic_number=$(echo "$elf_info" | grep "Magic" | sed 's/.*Magic:\s*//')
 class=$(echo "$elf_info" | grep "Class:" | awk '{print $2}')
