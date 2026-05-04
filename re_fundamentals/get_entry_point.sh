@@ -25,7 +25,7 @@ elf_info=$(readelf -h "$file_name")
 
 magic_number=$(echo "$elf_info" | grep "Magic" | sed 's/.*Magic:\s*//')
 class=$(echo "$elf_info" | grep "Class:" | awk '{print $2}')
-byte_order=$(echo "$elf_info" | grep "Data:" | sed 's/.*Data:\s*//')
+byte_order=$(echo "$elf_info" | grep "Data:" | sed 's/.*Data:\s*//' | sed 's/2.s complement, //')
 entry_point_address=$(echo "$elf_info" | grep "Entry point address:" | awk '{print $NF}')
 
 display_elf_header_info
