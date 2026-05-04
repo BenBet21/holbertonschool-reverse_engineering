@@ -2,30 +2,33 @@
 
 source ./messages.sh
 
-if [ $# -ne 1 ]; then
-    echo "Error: Please provide an ELF file as argument."
-    echo "Usage: $0 <elf_file>"
+#check if an argument is provided
+if [ $# -eq 0 ];
+    then
+    echo "Usage : $0 <file_name>"
     exit 1
 fi
 
 file_name="$1"
 
-if [ ! -f "$file_name" ]; then
-    echo "Error: File '$file_name' not found."
+#check if file exists
+if [ ! -f "$file_name" ]
+    then
+    echo "Error: '$file_name' doesn't exist"
     exit 1
 fi
 
-# Validate ELF using readelf (allowed tool)
-if ! readelf -h "$file_name" > /dev/null 2>&1; then
-    echo "Error: '$file_name' is not a valid ELF file."
-    exit 1
+#check if file is an ELF
+if ! file "$file_name" | grep -q 'ELF'
+    then
+    echo "Error: '$file_name' is not a valid ELF file"
 fi
 
-elf_info=$(readelf -h "$file_name")
-
-magic_number=$(echo "$elf_info" | grep "Magic" | sed 's/.*Magic:\s*//')
-class=$(echo "$elf_info" | grep "Class:" | awk '{print $2}')
+#get needed info
+magic_number=$(readelf -h $file_name | grep 'Magic:' | cut -d: -f2 | xargs)
+class=$(readelf -h $file_name | grep 'Class:' | cut -d: -f2 | xargs)
 byte_order=$(readelf -h $file_name | grep 'Data:' | cut -d, -f2 | sed 's/^[[:space:]]*//')
-entry_point_address=$(echo "$elf_info" | grep "Entry point address:" | awk '{print $NF}')
+entry_point_address=$(readelf -h $file_name | grep 'Entry point address:' | cut -d: -f2 | xargs)
 
+#display info using func in messages.sh
 display_elf_header_info
